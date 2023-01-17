@@ -15,27 +15,31 @@ CANVAS_SIZE_Y = 128
     "-f", "--font", "font_name", type=str, default="Ubuntu-M", show_default=True
 )
 @click.option("-b", "--bars", "show_bars", type=bool, default=True, show_default=True)
+@click.option("-o", "--offset", type=int, default=3, show_default=True)
+@click.option("-n", "--no-strip", type=bool, default=False, show_default=True)
+
 @click.option(
     "-w",
     "--tape-width",
-    type=click.Choice(["24", "16", "12"]),
+    type=click.Choice(["24", "16", "12", "6"]),
     default=24,
     help="in mm",
 )
-def main(text, font_size, text_color, tape_width, font_name, show_bars):
+def main(text, font_size, text_color, tape_width, font_name, offset, no_strip, show_bars):
     try:
         font = ImageFont.truetype(font_name, font_size)
     except Exception as err:
         sys.exit(f"cannot open font {font_name}: {err}")
 
-    text = text.strip()
+    if not no_strip:
+        text = text.strip()
     tape_width = int(tape_width)
     img_size_y = int(tape_width / 24 * 128)
     text_size_x, text_size_y = get_text_dimensions(text, font)
 
-    img = Image.new("RGBA", (text_size_x, img_size_y))
+    img = Image.new("RGBA", (text_size_x + 2 * offset, img_size_y))
     d = ImageDraw.Draw(img)
-    text_anchor = (0, img_size_y / 2)
+    text_anchor = (offset, img_size_y / 2)
     d.text(text_anchor, text, anchor="lm", font=font, fill=text_color)
 
     if show_bars:
